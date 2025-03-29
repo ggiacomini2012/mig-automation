@@ -1,11 +1,21 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: Get the directory where this script is located
+set "SCRIPT_DIR=%~dp0"
+
 :: Read project path from config.json
-for /f "tokens=* delims=" %%a in ('type config.json ^| findstr "project_path"') do (
+for /f "tokens=* delims=" %%a in ('type "%SCRIPT_DIR%config.json" ^| findstr "project_path"') do (
     set "line=%%a"
     set "line=!line:~21,-2!"
     set "PROJECT_PATH=!line!"
+)
+
+:: Convert relative path to absolute path
+if "%PROJECT_PATH%"=="." (
+    set "PROJECT_PATH=%SCRIPT_DIR%"
+) else (
+    set "PROJECT_PATH=%SCRIPT_DIR%%PROJECT_PATH%"
 )
 
 :: Convert forward slashes to backslashes for Windows
