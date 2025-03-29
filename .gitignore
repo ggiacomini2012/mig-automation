@@ -38,6 +38,7 @@ ENV/
 *.gif
 *.webp
 *.txt
+!requirements.txt
 *.bat
 *.lnk
 *.whtt
