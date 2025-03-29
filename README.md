@@ -9,6 +9,21 @@ Este repositório contém scripts de automação para processos da Made in Guard
 - **Automação de Campanhas**: Scripts para gerenciamento de campanhas promocionais
 - **Integração WhatsApp**: Automação de mensagens via WhatsApp Web
 
+## Como Começar
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/ggiacomini2012/mig-automation.git
+cd mig-automation
+```
+
+2. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+3. Execute o script desejado conforme a necessidade
+
 ## Estrutura do Projeto
 
 - `pos-compra.py`: Script principal para automação de mensagens pós-compra
