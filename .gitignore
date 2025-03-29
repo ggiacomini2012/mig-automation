@@ -39,7 +39,11 @@ ENV/
 *.webp
 *.txt
 !requirements.txt
+!config.json
 *.bat
+!zterminal.bat
+*.sh
+!zterminal.sh
 *.lnk
 *.whtt
 .env
