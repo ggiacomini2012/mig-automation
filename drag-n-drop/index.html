@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tabela com Importação, Abas, Edição, Cores, Inserção/Remoção, Desfazer e Calendário</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2b2b2b;
+      color: #ddd;
+      text-align: center;
+      padding: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #3a3a3a;
+      color: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #444;
+      padding: 12px;
+      text-align: center;
+      min-width: 100px;
+    }
+    th {
+      background: #444;
+      color: #fff;
+    }
+    .draggable {
+      cursor: grab;
+      background-color: #555;
+      padding: 8px;
+      border-radius: 5px;
+    }
+    .dragging {
+      opacity: 0.5;
+      border: 2px dashed #bbb;
+    }
+    button, input, select {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    button:hover, input:hover, select:hover {
+      background: #555;
+    }
+    /* Containers para as abas */
+    #tabs-container {
+      background-color: #555555;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0px 0px 10px #2a2a2a;
+      padding: 10px;
+      margin: 10px;
+    }
+    .tab-button {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .tab-button.active {
+      background: #555;
+    }
+    .tab-pane {
+      display: none;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    /* Container geral para scroll se necessário */
+    #tab-content-container {
+      max-width: 100vw;
+      overflow-x: auto;
+      border-radius: 10px;
+      padding: 10px;
+      background: #333;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    /* Oculta o seletor, pois usaremos abas dinâmicas */
+    #sheetSelector {
+      display: none;
+    }
+    /* Estilo para as células extras de inserção e remoção */
+    .extra-cell, .extra-row-cell {
+      padding: 5px;
+    }
+    .plus-btn, .minus-btn {
+      width: 45%;
+      margin: 2px;
+    }
+  </style>
+  <!-- Bibliotecas: XLSX para leitura e ExcelJS para exportação -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+</head>
+<body>
+  <!-- Botões principais -->
+  <button onclick="exportToExcel()">Exportar para Excel</button>
+  <input type="file" id="fileInput" accept=".xlsx" />
+  <select id="sheetSelector" onchange="loadSelectedSheet()"></select>
+  <button onclick="importFromExcel()">Importar Tabela</button>
+  <button onclick="undoLastChange()">Desfazer Última Alteração</button>
+
+  <!-- Botões para criar, deletar e renomear tabelas -->
+  <button onclick="createNewTable()">Criar Tabela</button>
+  <button onclick="deleteActiveTable()">Deletar Tabela</button>
+  <button onclick="renameActiveTable()">Renomear Tabela</button>
+  <br>
+  <!-- Nova funcionalidade: Tabela Calendário -->
+  <label for="calendarInput">Selecione uma data para o calendário:</label>
+  <input type="date" id="calendarInput" />
+  <button onclick="createCalendarTable()">Criar Tabela Calendário</button>
+  
+  <!-- Containers para as abas e seus conteúdos -->
+  <div id="tabs-container"></div>
+  <div id="tab-content-container"></div>
+  
+  <script defer>
+    let history = [];
+    let workbookGlobal = null;
+    let shiftPressed = false;
+    let newTableIndex = 1; // contador para novas tabelas
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Shift") shiftPressed = true;
+      // Ctrl+Z para desfazer
+      // if (e.ctrlKey && e.key === "z") undoLastChange();
+    });
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "Shift") shiftPressed = false;
+    });
+
+    // ==================== ARMAZENAMENTO E RESTAURAÇÃO DE ESTADO ====================
+    /**
+     * Armazena no histórico o HTML das células (ignorando as extras),
+     * para permitir desfazer (Ctrl+Z) sem perder os color pickers.
+     */
+    function saveState() {
+      const activeTable = document.querySelector(".tab-pane.active table");
+      if (!activeTable) return;
+
+      // Se já atingimos 20 estados, removemos o mais antigo
+      if (history.length >= 20) {
+        history.shift();
+      }
+
+      // Para cada linha (exceto extra-row), armazenamos o innerHTML das células (exceto extra-cell)
+      const tableState = Array.from(activeTable.querySelectorAll("tr")).map(row => {
+        if (row.classList.contains("extra-row")) {
+          return null; // ignoramos a linha extra
+        }
+        const cellsHTML = Array.from(row.cells)
+          .filter(cell => !cell.classList.contains("extra-cell"))
+          .map(cell => cell.innerHTML);
+        return cellsHTML;
+      }).filter(r => r !== null);
+
+      history.push(tableState);
+    }
+
+    /**
+     * Desfaz a última alteração, restaurando o HTML das células.
+     */
+    function undoLastChange() {
+      if (history.length === 0) return;
+      const lastState = history.pop();
+      populateTable(lastState, false);
+    }
+
+    /**
+     * Recria o conteúdo da tabela ativa a partir de um array de arrays de HTML.
+     * Em seguida, reaplica os eventos e color pickers.
+     */
+    function populateTable(savedState, save = true) {
+      const activeTable = document.querySelector(".tab-pane.active table");
+      if (!activeTable) return;
+
+      // Limpamos todo o tbody (exceto a linha extra)
+      const tbody = activeTable.querySelector("tbody");
+      if (!tbody) return;
+      // Remove todas as linhas do tbody
+      tbody.innerHTML = "";
+
+      // Reconstruímos as linhas a partir de savedState
+      savedState.forEach(rowData => {
+        const tr = document.createElement("tr");
+        rowData.forEach(cellHTML => {
+          const td = document.createElement("td");
+          td.innerHTML = cellHTML; // restaura o HTML (incluindo inputs de cor)
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+
+      // Após repopular, re-adicionamos a linha extra e o cabeçalho extra (se não existir)
+      addPlusMinusButtons(activeTable);
+
+      // Reaplicamos arraste/edição e color pickers
+      makeTDsDraggable();
+      makeHeaderCellsColorable();
+      reapplyHeaderColorsFromLocalStorage(activeTable);
+
+      if (save) saveState();
+    }
+
+    // ==================== FUNÇÕES DE CRIAÇÃO/REMOÇÃO DE COLUNAS E LINHAS ====================
+    function addNewColumn(table) {
+      const headerRow = table.rows[0];
+      if (headerRow) {
+        const extraCell = headerRow.querySelector(".extra-cell");
+        const newHeaderCell = document.createElement("th");
+        newHeaderCell.innerHTML = "  "; // espaço
+        newHeaderCell.classList.add("draggable");
+        newHeaderCell.setAttribute("draggable", "true");
+        headerRow.insertBefore(newHeaderCell, extraCell);
+      }
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        if (row.classList.contains("extra-row")) continue;
+        row.insertCell(-1).innerHTML = "  ";
+      }
+      // Ajusta o colspan da linha extra
+      const extraRow = table.querySelector("tr.extra-row");
+      if (extraRow) {
+        extraRow.cells[0].colSpan = table.rows[0].cells.length;
+      }
+      makeTDsDraggable();
+      makeHeaderCellsColorable();
+      reapplyHeaderColorsFromLocalStorage(table);
+      saveState();
+    }
+
+    function removeColumn(table) {
+      const headerRow = table.rows[0];
+      if (!headerRow) return;
+      const dataCellsCount = headerRow.cells.length - 1; // exclui a célula extra
+      if (dataCellsCount <= 0) return;
+      headerRow.deleteCell(dataCellsCount - 1);
+      for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        if (row.classList.contains("extra-row")) continue;
+        row.deleteCell(dataCellsCount - 1);
+      }
+      const extraRow = table.querySelector("tr.extra-row");
+      if (extraRow) {
+        extraRow.cells[0].colSpan = table.rows[0].cells.length;
+      }
+      saveState();
+    }
+
+    function addNewRow(table) {
+      const extraRowIndex = table.rows.length - 1;
+      const newRow = table.insertRow(extraRowIndex);
+      const dataColCount = table.rows[0].cells.length - 1;
+      for (let j = 0; j < dataColCount; j++) {
+        const newCell = newRow.insertCell();
+        newCell.innerHTML = "  ";
+        newCell.classList.add("draggable");
+        newCell.setAttribute("draggable", "true");
+      }
+      makeTDsDraggable();
+      saveState();
+    }
+
+    function removeRow(table) {
+      const totalRows = table.rows.length;
+      if (totalRows <= 2) return;
+      table.deleteRow(totalRows - 2);
+      saveState();
+    }
+
+    // ==================== FUNÇÕES DE ARRANJO DE TABELA (BOTÕES + E -) ====================
+    function addPlusMinusButtons(table) {
+      const headerRow = table.rows[0];
+      if (headerRow && !headerRow.querySelector(".extra-cell")) {
+        const extraCell = document.createElement("th");
+        extraCell.classList.add("extra-cell");
+        extraCell.style.padding = "5px";
+        const plusBtn = document.createElement("button");
+        plusBtn.textContent = "+";
+        plusBtn.classList.add("plus-btn");
+        plusBtn.onclick = function(e) {
+          e.stopPropagation();
+          addNewColumn(table);
+        };
+        const minusBtn = document.createElement("button");
+        minusBtn.textContent = "–";
+        minusBtn.classList.add("minus-btn");
+        minusBtn.onclick = function(e) {
+          e.stopPropagation();
+          removeColumn(table);
+        };
+        extraCell.appendChild(plusBtn);
+        extraCell.appendChild(minusBtn);
+        headerRow.appendChild(extraCell);
+      }
+      if (!table.querySelector("tr.extra-row")) {
+        const newRow = table.insertRow(-1);
+        newRow.classList.add("extra-row");
+        const extraCell = newRow.insertCell();
+        extraCell.classList.add("extra-row-cell");
+        extraCell.colSpan = table.rows[0].cells.length;
+        extraCell.style.textAlign = "center";
+        const plusRowBtn = document.createElement("button");
+        plusRowBtn.textContent = "+";
+        plusRowBtn.classList.add("plus-btn");
+        plusRowBtn.onclick = function(e) {
+          e.stopPropagation();
+          addNewRow(table);
+        };
+        const minusRowBtn = document.createElement("button");
+        minusRowBtn.textContent = "–";
+        minusRowBtn.classList.add("minus-btn");
+        minusRowBtn.onclick = function(e) {
+          e.stopPropagation();
+          removeRow(table);
+        };
+        extraCell.appendChild(plusRowBtn);
+        extraCell.appendChild(minusRowBtn);
+      }
+    }
+
+    // ==================== FUNÇÕES DE COR PARA COLUNAS ====================
+    function convertHexToARGB(hex) {
+      hex = hex.replace("#", "");
+      return "FF" + hex.toUpperCase();
+    }
+
+    // Aplica a cor em todas as células da coluna, exceto as extras
+    function updateColumnColor(table, colIndex, color) {
+      const rows = table.rows;
+      for (let i = 0; i < rows.length; i++) {
+        const cell = rows[i].cells[colIndex];
+        if (cell && !cell.classList.contains("extra-cell")) {
+          cell.style.backgroundColor = color;
+        }
+      }
+    }
+
+    /**
+     * Gera um ID único para cada tabela, usando data-sheet-name ou 'unnamedTable'
+     */
+    function getTableID(table) {
+      return table.getAttribute("data-sheet-name") || "unnamedTable";
+    }
+
+    /**
+     * Salva a cor no localStorage sempre que ela é alterada,
+     * usando como chave: tableID + ":" + colIndex
+     */
+    function storeColorInLocalStorage(table, colIndex, colorVal) {
+      const tableID = getTableID(table);
+      localStorage.setItem(tableID + ":" + colIndex, colorVal);
+    }
+
+    /**
+     * Lê a cor do localStorage (se existir) para tableID + ":" + colIndex
+     */
+    function getColorFromLocalStorage(table, colIndex) {
+      const tableID = getTableID(table);
+      return localStorage.getItem(tableID + ":" + colIndex);
+    }
+
+    /**
+     * Quando restauramos a tabela (ex: após Ctrl+Z),
+     * chamamos reapplyHeaderColorsFromLocalStorage(table) para sincronizar
+     * os inputs de cor e a cor aplicada.
+     */
+    function reapplyHeaderColorsFromLocalStorage(table) {
+      const headerRow = table.querySelector("tr:first-child");
+      if (!headerRow) return;
+      const cells = headerRow.cells;
+      for (let i = 0; i < cells.length; i++) {
+        const cell = cells[i];
+        if (cell.classList.contains("extra-cell")) continue;
+        const colorInput = cell.querySelector("input[type='color']");
+        if (!colorInput) continue;
+        // Lê do localStorage
+        const storedColor = getColorFromLocalStorage(table, i);
+        if (storedColor) {
+          colorInput.value = storedColor;
+          cell.dataset.colColor = storedColor;
+          updateColumnColor(table, i, storedColor);
+        }
+      }
+    }
+
+    /**
+     * Cria inputs de cor no cabeçalho (exceto extra),
+     * e a cada mudança de cor, salva no localStorage e aplica a cor.
+     */
+    function makeHeaderCellsColorable() {
+      const tables = document.querySelectorAll("table.exportable");
+      tables.forEach(table => {
+        const headerRow = table.querySelector("tr:first-child");
+        if (!headerRow) return;
+        Array.from(headerRow.cells).forEach((cell, colIndex) => {
+          if (cell.classList.contains("extra-cell")) return; // pula a célula extra
+          // Se não existir input de cor, criamos
+          if (!cell.querySelector("input[type='color']")) {
+            const colorInput = document.createElement("input");
+            colorInput.type = "color";
+            // Se já existir algo no localStorage, usamos
+            const storedColor = getColorFromLocalStorage(table, colIndex);
+            if (storedColor) {
+              colorInput.value = storedColor;
+              cell.dataset.colColor = storedColor;
+              updateColumnColor(table, colIndex, storedColor);
+            } else {
+              colorInput.value = cell.dataset.colColor || "#ffffff";
+            }
+            colorInput.style.width = "100%";
+            colorInput.style.boxSizing = "border-box";
+            colorInput.style.marginTop = "5px";
+            colorInput.addEventListener("input", function(e) {
+              const newColor = e.target.value;
+              cell.dataset.colColor = newColor;
+              updateColumnColor(table, colIndex, newColor);
+              storeColorInLocalStorage(table, colIndex, newColor);
+            });
+            cell.appendChild(document.createElement("br"));
+            cell.appendChild(colorInput);
+          }
+        });
+      });
+    }
+
+    // ==================== FUNÇÕES DE ARRASTE/EDIÇÃO (CÉLULAS) ====================
+    function makeTDsDraggable() {
+      const tds = document.querySelectorAll("td");
+      tds.forEach(td => {
+        td.classList.add("draggable");
+        td.setAttribute("draggable", "true");
+        td.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", e.target.innerHTML);
+          e.target.classList.add("dragging");
+        });
+        td.addEventListener("dragover", (e) => { e.preventDefault(); });
+        td.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const draggedItem = document.querySelector(".dragging");
+          if (draggedItem && draggedItem !== e.target) {
+            saveState();
+            if (shiftPressed) {
+              e.target.innerHTML = draggedItem.innerHTML;
+            } else {
+              let temp = e.target.innerHTML;
+              e.target.innerHTML = draggedItem.innerHTML;
+              draggedItem.innerHTML = temp;
+            }
+          }
+          draggedItem.classList.remove("dragging");
+        });
+        td.addEventListener("dragend", (e) => {
+          e.target.classList.remove("dragging");
+        });
+        td.addEventListener("dblclick", function(e) {
+          if (this.querySelector("input")) return;
+          let currentText = this.innerText;
+          let input = document.createElement("input");
+          input.type = "text";
+          input.value = currentText;
+          input.addEventListener("blur", () => {
+            this.innerText = input.value;
+            saveState();
+          });
+          input.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") {
+              input.blur();
+            }
+          });
+          this.innerText = "";
+          this.appendChild(input);
+          input.focus();
+        });
+      });
+    }
+
+    // ==================== FUNÇÕES DE CRIAÇÃO/REMOÇÃO DE TABELAS (ABAS) ====================
+    function createNewTable() {
+      let numRows = prompt("Digite o número de linhas:", "3");
+      let numCols = prompt("Digite o número de colunas:", "3");
+      numRows = parseInt(numRows) || 3;
+      numCols = parseInt(numCols) || 3;
+      const sheetName = "NovaTabela" + newTableIndex++;
+
+      const tabButton = document.createElement("button");
+      tabButton.textContent = sheetName;
+      tabButton.classList.add("tab-button");
+      tabButton.dataset.tab = sheetName;
+      tabButton.onclick = function () {
+        document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+        tabButton.classList.add("active");
+        document.getElementById(sheetName).classList.add("active");
+      };
+      document.getElementById("tabs-container").appendChild(tabButton);
+
+      const tabPane = document.createElement("div");
+      tabPane.id = sheetName;
+      tabPane.classList.add("tab-pane");
+
+      const table = document.createElement("table");
+      table.classList.add("simple-table", "exportable");
+      table.setAttribute("data-sheet-name", sheetName);
+
+      const tbody = document.createElement("tbody");
+      for (let i = 0; i < numRows; i++) {
+        const tr = document.createElement("tr");
+        for (let j = 0; j < numCols; j++) {
+          const td = document.createElement("td");
+          td.innerHTML = "  "; // espaço
+          td.classList.add("draggable");
+          td.setAttribute("draggable", "true");
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      tabPane.appendChild(table);
+      document.getElementById("tab-content-container").appendChild(tabPane);
+
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+      tabButton.classList.add("active");
+      tabPane.classList.add("active");
+
+      makeTDsDraggable();
+      makeHeaderCellsColorable();
+      addPlusMinusButtons(table);
+      saveState();
+    }
+
+    function deleteActiveTable() {
+      const activeTabPane = document.querySelector(".tab-pane.active");
+      if (!activeTabPane) {
+        alert("Não há aba ativa para deletar!");
+        return;
+      }
+      const activeTabId = activeTabPane.id;
+      const activeTabButton = document.querySelector(`.tab-button[data-tab="${activeTabId}"]`);
+      if (activeTabButton) activeTabButton.remove();
+      activeTabPane.remove();
+      const firstTabButton = document.querySelector(".tab-button");
+      if (firstTabButton) {
+        firstTabButton.click();
+      } else {
+        history = [];
+      }
+    }
+
+    function renameActiveTable() {
+      const activeTabPane = document.querySelector(".tab-pane.active");
+      if (!activeTabPane) {
+        alert("Não há aba ativa para renomear!");
+        return;
+      }
+      const activeTabId = activeTabPane.id;
+      const activeTabButton = document.querySelector(`.tab-button[data-tab="${activeTabId}"]`);
+      const currentName = activeTabButton ? activeTabButton.textContent : activeTabId;
+      const newName = prompt("Digite o novo nome para a tabela:", currentName);
+      if (!newName) return;
+      if (activeTabButton) {
+        activeTabButton.textContent = newName;
+        activeTabButton.dataset.tab = newName;
+      }
+      activeTabPane.id = newName;
+      const table = activeTabPane.querySelector("table.exportable");
+      if (table) {
+        table.setAttribute("data-sheet-name", newName);
+      }
+    }
+
+    // ==================== FUNÇÕES DE IMPORTAÇÃO/EXPORTAÇÃO ====================
+    function importFromExcel() {
+      const fileInput = document.getElementById("fileInput");
+      if (fileInput.files.length === 0) {
+        alert("Selecione um arquivo Excel!");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.readAsBinaryString(file);
+      reader.onload = function (e) {
+        const data = e.target.result;
+        workbookGlobal = XLSX.read(data, { type: "binary" });
+        const sheetSelector = document.getElementById("sheetSelector");
+        sheetSelector.innerHTML = "";
+        workbookGlobal.SheetNames.forEach(sheet => {
+          let option = document.createElement("option");
+          option.value = sheet;
+          option.textContent = sheet;
+          sheetSelector.appendChild(option);
+        });
+        sheetSelector.style.display = "none";
+        createTabsFromWorkbook();
+      };
+    }
+
+    function createTabsFromWorkbook() {
+      const tabsContainer = document.getElementById("tabs-container");
+      const tabContentContainer = document.getElementById("tab-content-container");
+      tabsContainer.innerHTML = "";
+      tabContentContainer.innerHTML = "";
+
+      workbookGlobal.SheetNames.forEach((sheetName, index) => {
+        const tabButton = document.createElement("button");
+        tabButton.textContent = sheetName;
+        tabButton.classList.add("tab-button");
+        tabButton.dataset.tab = "tab" + index;
+        tabButton.onclick = function () {
+          document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+          document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+          tabButton.classList.add("active");
+          document.getElementById("tab" + index).classList.add("active");
+        };
+        tabsContainer.appendChild(tabButton);
+
+        const tabPane = document.createElement("div");
+        tabPane.id = "tab" + index;
+        tabPane.classList.add("tab-pane");
+
+        const table = document.createElement("table");
+        table.classList.add("simple-table", "exportable");
+        table.setAttribute("data-sheet-name", sheetName);
+
+        const tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+        tabPane.appendChild(table);
+        tabContentContainer.appendChild(tabPane);
+
+        const sheet = workbookGlobal.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+        jsonData.forEach(rowData => {
+          const tr = document.createElement("tr");
+          rowData.forEach(cellData => {
+            const td = document.createElement("td");
+            td.innerHTML = cellData === "" ? "" : cellData;
+            td.classList.add("draggable");
+            td.setAttribute("draggable", "true");
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+
+        addPlusMinusButtons(table);
+      });
+
+      const firstTab = document.querySelector(".tab-button");
+      if (firstTab) firstTab.click();
+
+      makeTDsDraggable();
+      makeHeaderCellsColorable();
+      // Sincroniza as cores do localStorage com as colunas recriadas
+      document.querySelectorAll("table.exportable").forEach(table => {
+        reapplyHeaderColorsFromLocalStorage(table);
+      });
+      saveState();
+    }
+
+    function exportToExcel() {
+      const workbook = new ExcelJS.Workbook();
+      const tables = document.querySelectorAll("table.exportable");
+      if (tables.length === 0) {
+        alert("Nenhuma tabela para exportar!");
+        return;
+      }
+      tables.forEach((table, index) => {
+        const sheetName = table.getAttribute("data-sheet-name") || `Sheet${index + 1}`;
+        const worksheet = workbook.addWorksheet(sheetName);
+
+        const rows = table.querySelectorAll("tr");
+        rows.forEach(row => {
+          if (row.classList.contains("extra-row")) return;
+          const cells = row.querySelectorAll("th, td");
+          let rowData = [];
+          cells.forEach(cell => {
+            if (!cell.classList.contains("extra-cell")) {
+              rowData.push(cell.innerText);
+            }
+          });
+          worksheet.addRow(rowData);
+        });
+
+        const firstRow = worksheet.getRow(1);
+        if (firstRow && firstRow.cellCount > 0) {
+          const numCols = firstRow.cellCount;
+          let columns = [];
+          for (let i = 0; i < numCols; i++) {
+            columns.push({ width: 10 });
+          }
+          worksheet.columns = columns;
+        }
+        if (worksheet.columns) {
+          worksheet.columns.forEach((column) => {
+            let maxLength = 10;
+            column.eachCell({ includeEmpty: true }, (cell) => {
+              const cellValue = cell.value ? cell.value.toString() : "";
+              maxLength = Math.max(maxLength, cellValue.length);
+            });
+            column.width = maxLength + 2;
+          });
+        }
+
+        const htmlFirstRow = table.querySelector("tr:first-child");
+        if (htmlFirstRow) {
+          const headerCells = htmlFirstRow.children;
+          for (let i = 0; i < headerCells.length; i++) {
+            const headerCell = headerCells[i];
+            const colColor = headerCell.dataset.colColor;
+            if (colColor && !headerCell.classList.contains("extra-cell")) {
+              worksheet.eachRow({ includeEmpty: true }, (row) => {
+                const cell = row.getCell(i + 1);
+                cell.fill = {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: convertHexToARGB(colColor) }
+                };
+              });
+            }
+          }
+        }
+
+        worksheet.eachRow({ includeEmpty: true }, (row) => {
+          row.eachCell({ includeEmpty: true }, (cell) => {
+            cell.alignment = { wrapText: true, horizontal: 'center', vertical: 'middle' };
+          });
+        });
+      });
+
+      workbook.xlsx.writeBuffer().then((buffer) => {
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "planilha_exportada.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      });
+    }
+
+    // Função antiga (não utilizada com abas dinâmicas), mantida apenas para compatibilidade
+    function loadSelectedSheet() {
+      // Sem uso neste exemplo
+    }
+
+    // ==================== NOVA FUNÇÃO: CRIAÇÃO DE TABELA CALENDÁRIO ====================
+    function createCalendarTable() {
+      const dateInput = document.getElementById("calendarInput");
+      if (!dateInput.value) {
+        alert("Por favor, selecione uma data para o calendário.");
+        return;
+      }
+      const selectedDate = new Date(dateInput.value);
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth(); // 0-indexado
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      const monthName = monthNames[month];
+      const sheetName = `Calendário ${monthName} ${year}`;
+
+      // Cria o botão da aba
+      const tabButton = document.createElement("button");
+      tabButton.textContent = sheetName;
+      tabButton.classList.add("tab-button");
+      tabButton.dataset.tab = sheetName;
+      tabButton.onclick = function () {
+        document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+        document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+        tabButton.classList.add("active");
+        document.getElementById(sheetName).classList.add("active");
+      };
+      document.getElementById("tabs-container").appendChild(tabButton);
+
+      // Cria o conteúdo da aba
+      const tabPane = document.createElement("div");
+      tabPane.id = sheetName;
+      tabPane.classList.add("tab-pane");
+
+      // Cria a tabela com cabeçalho fixo
+      const table = document.createElement("table");
+      table.classList.add("simple-table", "exportable");
+      table.setAttribute("data-sheet-name", sheetName);
+
+      // Cria o cabeçalho
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      const headers = ["Dia da Semana", "Número do Dia", "Bruna", "Guilherme", "Bia", "Freela"];
+      headers.forEach(headerText => {
+        const th = document.createElement("th");
+        th.textContent = headerText;
+        headerRow.appendChild(th);
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Cria o corpo da tabela com os dias do mês
+      const tbody = document.createElement("tbody");
+      const diasDaSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+      for (let day = 1; day <= daysInMonth; day++) {
+        const tr = document.createElement("tr");
+        const currentDate = new Date(year, month, day);
+        // Coluna: Dia da Semana
+        const tdDayName = document.createElement("td");
+        tdDayName.textContent = diasDaSemana[currentDate.getDay()];
+        tr.appendChild(tdDayName);
+        // Coluna: Número do Dia
+        const tdDayNumber = document.createElement("td");
+        tdDayNumber.textContent = day;
+        tr.appendChild(tdDayNumber);
+        // Colunas: Bruna, Guilherme, Bia, Freela (inicialmente vazias)
+        for (let i = 0; i < 4; i++) {
+          const td = document.createElement("td");
+          td.textContent = "";
+          td.classList.add("draggable");
+          td.setAttribute("draggable", "true");
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+
+      // Adiciona a tabela à aba e a aba ao container
+      tabPane.appendChild(table);
+      document.getElementById("tab-content-container").appendChild(tabPane);
+
+      // Adiciona os botões de adicionar/subtrair linhas e colunas
+      addPlusMinusButtons(table);
+
+      // Ativa a nova aba
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+      tabButton.classList.add("active");
+      tabPane.classList.add("active");
+
+      // Aplica funcionalidades de arraste e inputs de cor, se necessário
+      makeTDsDraggable();
+      makeHeaderCellsColorable();
+
+      saveState();
+    }
+  </script>
+</body>
+</html>
