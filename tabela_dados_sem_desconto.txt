@@ -1,0 +1,6 @@
+Ref. Mig	Descrição do produto	Tamanhos	Cores	Preço final	Desconto
+---TABLE_BREAK---
+Ref. Mig	Descrição do produto	Tamanhos	Cores	Preço final	Desconto
+---TABLE_BREAK---
+Ref. Mig	Descrição do produto	Material	Tamanhos	Cores	Preço final	Desconto
+---TABLE_BREAK---
