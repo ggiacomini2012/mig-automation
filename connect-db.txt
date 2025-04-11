@@ -1,0 +1,3 @@
+isql
+
+CONNECT 'C:/store/restored_database.fdb' USER 'SYSDBA' PASSWORD 'masterkey';
