@@ -32,12 +32,8 @@ ENV/
 *.swo
 
 # Project specific
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.webp
-*.txt
+
+
 !requirements.txt
 !config.json
 *.bat
