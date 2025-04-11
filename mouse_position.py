@@ -11,7 +11,7 @@ def mostrar_posicao_mouse():
         posicao = mouse.position
         
         # Exibe a posição no terminal
-        print(f"pyautogui.click({posicao})")
+        print(f"pyautogui.click{posicao}")
         
         # Atraso de 500ms
         time.sleep(0.5)
