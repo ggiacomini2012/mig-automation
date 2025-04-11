@@ -7,4 +7,5 @@ pyperclip>=1.8.2
 python-dotenv>=1.0.0
 requests>=2.31.0
 # spacy>=3.7.2  # Comentado pois está em desenvolvimento
-# pt_core_news_sm>=3.7.0  # Modelo do spaCy para português 
+# pt_core_news_sm>=3.7.0  # Modelo do spaCy para português
+pywin32 
