@@ -16,29 +16,29 @@ import tempfile
 
 
 # Get the directory of the current script
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Create a temporary file in the script's directory
-temp_log_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".log", prefix="myapp-", dir=script_dir)
-log_filename = temp_log_file.name
-temp_log_file.close() # Close it so logging can open it
+# # Create a temporary file in the script's directory
+# temp_log_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix=".log", prefix="myapp-", dir=script_dir)
+# log_filename = temp_log_file.name
+# temp_log_file.close() # Close it so logging can open it
 
-print(f"Logging to temporary file: {log_filename}")
+# print(f"Logging to temporary file: {log_filename}")
 
-# Configure logging to use the temporary file
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    filename=log_filename,
-                    filemode='a')
+# # Configure logging to use the temporary file
+# logging.basicConfig(level=logging.INFO,
+#                     format='%(asctime)s - %(levelname)s - %(message)s',
+#                     filename=log_filename,
+#                     filemode='a')
 
-# Redirect stdout and stderr to the log file
-log_file_handle = open(log_filename, 'a', encoding='utf-8')
-sys.stdout = log_file_handle
-sys.stderr = log_file_handle
+# # Redirect stdout and stderr to the log file
+# log_file_handle = open(log_filename, 'a', encoding='utf-8')
+# sys.stdout = log_file_handle
+# sys.stderr = log_file_handle
 
-logging.info("Logging started in a temporary file.")
-logging.info("Terminal output is now redirected to this file.") # Added info message
-logging.warning("Something to watch out for.")
+# logging.info("Logging started in a temporary file.")
+# logging.info("Terminal output is now redirected to this file.") # Added info message
+# logging.warning("Something to watch out for.")
 
 # Remember the log file won't be deleted automatically because delete=False
 # You might want to manage its lifecycle, e.g., delete it on script exit if needed.
@@ -152,6 +152,7 @@ def detectar_e_clicar(imagem, delay, ajuste_x=0, ajuste_y=0):
             print(ajustado_x, ajustado_y)
             pyautogui.click(ajustado_x, ajustado_y)
             time.sleep(delay)
+            print("Encontrou")
         else:
             print(f"Imagem '{imagem}' não encontrada na tela.")
     except pyautogui.ImageNotFoundException:
@@ -226,9 +227,19 @@ def executar_codigo():
         time.sleep(0.5)
         detectar_e_clicar('./whats-puro.png', 1, ajuste_x=0, ajuste_y=0)
         time.sleep(0.5)
-        pyautogui.hotkey('ctrl', 'w')
-        time.sleep(0.2)
-        pyautogui.hotkey('ctrl', 't')
+        pressionar_comb_e_esperar(['ctrl', 'l'], 0.1)
+        pressionar_comb_e_esperar(['ctrl', 'a'], 0.1)
+        pressionar_comb_e_esperar(['ctrl', 'c'], 0.1)
+        checar_se_tem_texto = pyperclip.paste()
+        if "cli001" in checar_se_tem_texto:
+            print("tem cli001")
+            # aviso sonoro
+            winsound.Beep(1000, 1000)
+            break
+        else:
+            pyautogui.hotkey('ctrl', 'w')
+            time.sleep(0.2)
+            pyautogui.hotkey('ctrl', 't')
        
         time.sleep(0.2)
         pyperclip.copy(f"{url} ")   
@@ -244,6 +255,14 @@ def executar_codigo():
         # time.sleep(6)
 
         if invalido or invalido2 or invalido3 or invalido4:
+            print("numero invalido")
+            time.sleep(1)
+            detectar_e_clicar('./numero-invalido.png', 1, ajuste_x=0, ajuste_y=0)
+            detectar_e_clicar('./numero-invalido2.png', 1, ajuste_x=0, ajuste_y=0)
+            detectar_e_clicar('./invalido-whats-web-dark.png', 1, ajuste_x=0, ajuste_y=0)
+            detectar_e_clicar('./nao-esta-whats.png', 1, ajuste_x=0, ajuste_y=0)
+            pyautogui.click(719, 418)
+            pyautogui.click(719, 418)
             pressionar_e_esperar('enter', 2)
             time.sleep(1)
             pressionar_comb_e_esperar(['alt', 'tab'], 1)
@@ -309,8 +328,7 @@ def executar_codigo():
             else:
                 pressionar_comb_e_esperar(['ctrl', 'w'], 1)
                 clicar_e_esperar(616, 443, 14)
-            pressionar_comb_e_esperar(['ctrl', 'w'], 1)
-            clicar_e_esperar(616, 443, 14)
+
 
         print(f"Sequência {i+1}/20 concluída.")
 
