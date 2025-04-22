@@ -72,7 +72,7 @@ def copy_image_to_clipboard(image_path):
     win32clipboard.CloseClipboard()
 
 # Caminho da imagem
-image_path_new = r"C:\Users\noteUS\Desktop\automation\ano-inteiro.png"
+image_path_new = r"C:\Users\noteUS\Desktop\mig-automation\ano-inteiro.png"
 
 # Variável para controlar o estado de execução
 executando = True
@@ -182,7 +182,7 @@ def detectar_imagem(imagem):
 
 def substituir_texto(texto):
     if "Bianca Lima Pantano" in texto:
-        texto = texto.replace("Bianca Lima Pantano", "Bia")
+        texto = texto.replace("Bianca Lima Pantano", "Bia 🎁")
     elif "da Made in Guarda." in texto:
         linhas = texto.splitlines()
         for i, linha in enumerate(linhas):
@@ -190,6 +190,18 @@ def substituir_texto(texto):
                 linhas[i] = "Gui da Made in Guarda."
         texto = "\n".join(linhas)
     return texto
+
+# def substituir_texto_encurta_nome(texto):
+#     if "Bianca Lima Pantano" in texto:
+#         texto = texto.replace("Bianca Lima Pantano", "Bia 🎁")
+#     elif "Guilherme Giacomini Teixeira" in texto:
+#         texto = texto.replace("Guilherme Giacomini Teixeira", "Gui 🎁")
+#         linhas = texto.splitlines()
+#         for i, linha in enumerate(linhas):
+#             if "da Made in Guarda." in linha:
+#                 linhas[i] = "Gui da Made in Guarda."
+#         texto = "\n".join(linhas)
+#     return texto
 
 def click_copy_retun_value(x, y):
     pyautogui.doubleClick(x, y)
