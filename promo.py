@@ -302,7 +302,7 @@ def executar_codigo():
             name = name.lower().title()
             # mensagem_promo = f"Ei, {name}! \n\nA coleção de verão da Made In Guarda está com 50% de desconto 😁 é a sua chance de garantir o look perfeito, com a qualidade que você já conhece e ama.\n\nAh, o desconto é válido nas lojas físicas e no site. \n\nBora garantir? 😉 me chama que eu te ajudo!"
             mensagem_promo = f"Ei, {name}! \n\nA coleção de verão da Made In Guarda está com 50% de desconto 😁 é a sua chance de garantir o look perfeito, com a qualidade que você já conhece e ama.\n\nAh, o desconto é válido nas lojas físicas e no site. \n\nBora garantir? 😉 me chama que eu te ajudo!"
-            mensagem_preview = f"Olá, {name}!\n\nPREVIEW outono/inverno 25 da Made in Guarda chegou!\n\nA coleção *MAR O ANO INTEIRO* mergulha na liberdade, na fluidez e no ritmo da estação com estilo e conforto.\n\nJá disponível nas lojas e no site: www.madeinguarda.com.br — vem conferir ✨\n\nTe espero aqui na Loja Balneário Camboriú.\n\nAbraços 🎁"
+            mensagem_preview = f"Olá, {name}!\n\nPREVIEW outono/inverno 25 da Made in Guarda chegou!\n\nA coleção *MAR O ANO INTEIRO* mergulha na liberdade, na fluidez e no ritmo da estação com estilo e conforto.\n\nJá disponível nas lojas e no site: www.madeinguarda.com.br — vem conferir ✨\n\nTe espero aqui na Loja Balneário Camboriú.\n\nAbraços da galerinha da MIG-BC 🤗🎁"
 
             # adiciona foto
             # clicar_e_esperar(496, 729, 1)
