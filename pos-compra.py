@@ -14,6 +14,10 @@ import subprocess
 import os
 import random
 import winsound
+import logging  # Import the logging library
+
+# Configure logging (optional, basic configuration)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # import spacy
@@ -28,6 +32,10 @@ stop_execution = False
 executando = True
 
 def substituir_texto_com_item(texto, item):
+    logging.info(f"substituir_texto_com_item called with item: '{item}'")
+    # Log the first 50 chars of the input text for brevity
+    logging.info(f"Input texto (first 50 chars): '{texto[:50]}...'") 
+
     mensagens_bia = [
         f"Ola!\nBia da Made...\nTudo bem??? 😊\nCurtiu {item}?\nAbraços! ✨",
         f"Oi Bia da made in guarda falando! 👋\nQue legal que comprou {item}!\nEspero que tenha gostado! 🤩\nAbraços!",
@@ -67,13 +75,25 @@ def substituir_texto_com_item(texto, item):
         f"Ola a galera da made in guarda aqui! 👋\nQue bom que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nTudo de bom! ✨"
     ]
 
-    if any(nome in texto for nome in ["Bianca Lima Pantano", "Bianca", "Lima", "Pantano"]):
-        texto = random.choice(mensagens_bia)
-    elif any(nome in texto for nome in ["Gui", "Guilherme", "Giacomini", "Teixeira"]):
-        texto = random.choice(mensagens_gui)
-    elif "da Made in Guarda." in texto:
-        texto = random.choice(mensagens_made)
-    return texto
+    final_message = texto # Default to original text if no match
+    texto_lower = texto.lower() # Convert input text to lowercase once
+
+    if any(nome.lower() in texto_lower for nome in ["Bianca Lima Pantano", "Bianca", "Lima", "Pantano"]):
+        logging.info("Detected 'Bianca' in text (case-insensitive). Choosing from mensagens_bia.")
+        final_message = random.choice(mensagens_bia)
+        logging.info(f"Chosen message: '{final_message}'")
+    elif any(nome.lower() in texto_lower for nome in ["Gui", "Guilherme", "Giacomini", "Teixeira"]):
+        logging.info("Detected 'Gui' in text (case-insensitive). Choosing from mensagens_gui.")
+        final_message = random.choice(mensagens_gui)
+        logging.info(f"Chosen message: '{final_message}'")
+    elif "da made in guarda." in texto_lower: # Check lowercase phrase
+        logging.info("Detected 'da Made in Guarda.' in text (case-insensitive). Choosing from mensagens_made.")
+        final_message = random.choice(mensagens_made)
+        logging.info(f"Chosen message: '{final_message}'")
+    else:
+        logging.warning("No specific name/phrase detected. Returning original text.") # Log if no condition was met
+
+    return final_message
 
 # Marca o início do código
 inicio_execucao = time.time()
@@ -501,62 +521,101 @@ def executar_codigo():
                 print("whats 2")
 
                 # pyautogui.click(622, 391)
-                detectar_e_clicar('./whats-puro.png', 1, ajuste_x=0, ajuste_y=0)
-                wait(5000)
+                detectar_e_clicar('./whats-puro.png', 0, ajuste_x=0, ajuste_y=0)
+                
+                # wait(5000)
+                # wait(500)
                 print("whats 3")
 
-                pyautogui.click(634, 349)
-                wait(200)
-                pyautogui.click(634, 349)
-                wait(200)
-                pyautogui.click(634, 349)
-                wait(200)
+                # pyautogui.click(634, 349)
+                # wait(200)
+                # pyautogui.click(634, 349)
+                # wait(200)
+                # pyautogui.click(634, 349)
+                # wait(200)
                 
 
                 #--------TESTE--------
-                # time.sleep(0.5)
-                # pressionar_comb_e_esperar(['ctrl', 'l'], 0.1)
-                # pressionar_comb_e_esperar(['ctrl', 'a'], 0.1)
-                # pressionar_comb_e_esperar(['ctrl', 'c'], 0.1)
-                # checar_se_tem_texto = pyperclip.paste()
-                # if "cli001" in checar_se_tem_texto:
-                #     print("tem cli001")
-                #     # aviso sonoro
-                #     winsound.Beep(1000, 1000)
-                #     break
-                # else:
-                #     pyautogui.hotkey('ctrl', 'w')
-                #     time.sleep(0.2)
-                #     pyautogui.hotkey('ctrl', 't')
+                time.sleep(0.5)
+                pressionar_comb_e_esperar(['ctrl', 'l'], 0.1)
+                pressionar_comb_e_esperar(['ctrl', 'a'], 0.1)
+                pressionar_comb_e_esperar(['ctrl', 'c'], 0.1)
+                checar_se_tem_texto = pyperclip.paste()
+                if "cli001" in checar_se_tem_texto:
+                    print("tem cli001")
+                    # aviso sonoro
+                    winsound.Beep(1000, 1000)
+                    break
+                else:
+                    pyautogui.hotkey('ctrl', 'w')
+                    time.sleep(0.2)
+                    pyautogui.hotkey('ctrl', 't')
                 
-                # time.sleep(0.2)
-                # pyperclip.copy(f"{url} ")   
-                # time.sleep(0.2)
-                # pyautogui.hotkey('ctrl', 'v')
-                # time.sleep(0.2)
-                # pressionar_e_esperar('enter', 2)
+                time.sleep(0.2)
+                pyperclip.copy(f"{url} ")   
+                time.sleep(0.2)
+                pyautogui.hotkey('ctrl', 'v')
+                time.sleep(0.2)
+                pressionar_e_esperar('enter', 3)
                 #--------TESTE--------
 
-                # pyautogui
-                pressionar_comb_e_esperar(['ctrl', 'a'], 2)
-                pyautogui.hotkey('ctrl', 'c')
-                time.sleep(2)
 
-                texto_selecionado = pyperclip.paste()
-                print("texto_selecionado, item_comprado:")
-                print(texto_selecionado, item_comprado)
-                texto_final = substituir_texto_com_item(texto_selecionado, item_comprado)
+                #-----teste-2-----
+                # _comb_e_esperar(['ctrl', 'a'], 2)
+                # pyautogui.hotkey('ctrl', 'c')
+                # time.sleep(2)
+
+                # texto_selecionado = pyperclip.paste()
+                # print("texto_selecionado, item_comprado:")
+                # print(texto_selecionado, item_comprado)
+                # print texto extraido e item compra do beautifully
+                print(f"texto extraido: {texto_extraido}")
+                print(f"item comprado: {item_comprado}")
+                texto_final = substituir_texto_com_item(texto_extraido, item_comprado)
                 pyperclip.copy(texto_final)
+                time.sleep(0.2)
                 print("texto_final:")
                 print(texto_final)
                 pyautogui.hotkey('ctrl', 'v')
+                time.sleep(0.2)
+                pressionar_e_esperar('enter', 5)
+                #-----teste-2-----
+                # pyautogui
+                # pressionar_comb_e_esperar(['ctrl', 'a'], 2)
+                # pyautogui.hotkey('ctrl', 'c')
+                # time.sleep(2)
 
-                wait(2000)
-                pressionar_e_esperar('enter', 3)
-                pressionar_comb_e_esperar(['ctrl', 'w'], 2)
-                clicar_e_esperar(616, 443, 10)
-                sleep_time = round(random.uniform(1, 4), 1)
-                time.sleep(sleep_time)
+                # texto_selecionado = pyperclip.paste()
+                # print("texto_selecionado, item_comprado:")
+                # print(texto_selecionado, item_comprado)
+                # texto_final = substituir_texto_com_item(texto_selecionado, item_comprado)
+                # pyperclip.copy(texto_final)
+                # print("texto_final:")
+                # print(texto_final)
+                # pyautogui.hotkey('ctrl', 'v')
+
+                #-----teste-3-----
+                pressionar_comb_e_esperar(['alt', 'tab'], 1)
+                pressionar_comb_e_esperar(['ctrl', 'l'], 0.1)
+                pressionar_comb_e_esperar(['ctrl', 'a'], 0.1)
+                pressionar_comb_e_esperar(['ctrl', 'c'], 0.1)
+                checar_se_tem_texto = pyperclip.paste()
+                if "cli001" in checar_se_tem_texto:
+                    print("tem cli001")
+                    # aviso sonoro
+                    winsound.Beep(1000, 1000)
+                    break
+                else:
+                    pressionar_comb_e_esperar(['ctrl', 'w'], 1)
+                    clicar_e_esperar(616, 443, 14)
+                #-----teste-3-----
+
+                # wait(2000)
+                # pressionar_e_esperar('enter', 3)
+                # pressionar_comb_e_esperar(['ctrl', 'w'], 2)
+                # clicar_e_esperar(616, 443, 10)
+                # sleep_time = round(random.uniform(1, 4), 1)
+                # time.sleep(sleep_time)
                 
                 
 
@@ -572,8 +631,8 @@ def executar_codigo():
         print(f"Sequência {i+1}/{numero_de_vezes_que_vai_repetir} concluída.")
 
 # Cria threads para o monitoramento e o anúncio
-thread_anuncio = Thread(target=criar_anuncio, daemon=True)
-thread_anuncio.start()
+# thread_anuncio = Thread(target=criar_anuncio, daemon=True)
+# thread_anuncio.start()
 
 thread_monitoramento = Thread(target=monitorar_tecla_esc, daemon=True)
 thread_monitoramento.start()
