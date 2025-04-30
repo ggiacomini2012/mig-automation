@@ -72,7 +72,7 @@ def copy_image_to_clipboard(image_path):
     win32clipboard.CloseClipboard()
 
 # Caminho da imagem
-image_path_new = r"C:\Users\noteUS\Desktop\mig-automation\ano-inteiro.png"
+image_path_new = r"C:\Users\noteUS\Desktop\mig-automation\mae.jpg"
 
 # Variável para controlar o estado de execução
 executando = True
@@ -318,6 +318,8 @@ def executar_codigo():
             # mensagem_promo = f"Ei, {name}! \n\nA coleção de verão da Made In Guarda está com 50% de desconto 😁 é a sua chance de garantir o look perfeito, com a qualidade que você já conhece e ama.\n\nAh, o desconto é válido nas lojas físicas e no site. \n\nBora garantir? 😉 me chama que eu te ajudo!"
             mensagem_promo = f"Ei, {name}! \n\nA coleção de verão da Made In Guarda está com 50% de desconto 😁 é a sua chance de garantir o look perfeito, com a qualidade que você já conhece e ama.\n\nAh, o desconto é válido nas lojas físicas e no site. \n\nBora garantir? 😉 me chama que eu te ajudo!"
             mensagem_preview = f"Olá, {name}!\n\nPREVIEW outono/inverno 25 da Made in Guarda chegou!\n\nA coleção *MAR O ANO INTEIRO* mergulha na liberdade, na fluidez e no ritmo da estação com estilo e conforto.\n\nJá disponível nas lojas e no site: www.madeinguarda.com.br — vem conferir ✨\n\nTe espero aqui na Loja Balneário Camboriú.\n\nAbraços da galerinha da MIG-BC 🤗🎁"
+            mensagem_mae = f"{name}, já escolheu o presente da sua mãe? 💌\n\nNeste Dia das Mães, celebre com um presente cheio de significado!\n\nNas compras a partir de R$599, ganhe uma ecobag exclusiva Made in Guarda para completar esse momento especial.\n\nAção válida enquanto durar o estoque, vamos garantir a sua bag?"
+
 
             # adiciona foto
             # clicar_e_esperar(496, 729, 1)
@@ -333,7 +335,7 @@ def executar_codigo():
             # pressionar_e_esperar('enter', 3)
             # pyautogui.hotkey('ctrl', 'a')
             time.sleep(5)
-            pyperclip.copy(mensagem_preview)
+            pyperclip.copy(mensagem_mae)
             time.sleep(0.1)
             pyautogui.hotkey('ctrl', 'v')
             time.sleep(3)
@@ -359,11 +361,11 @@ def executar_codigo():
                 clicar_e_esperar(616, 443, 14)
 
 
-        print(f"Sequência {i+1}/20 concluída.")
+        print(f"Sequência {i+1}/{int(sys.argv[1])} concluída.")
 
 # Cria threads para o monitoramento e o anúncio
-thread_anuncio = Thread(target=criar_anuncio, daemon=True)
-thread_anuncio.start()
+# thread_anuncio = Thread(target=criar_anuncio, daemon=True)
+# thread_anuncio.start()
 
 thread_monitoramento = Thread(target=monitorar_tecla_esc, daemon=True)
 thread_monitoramento.start()
