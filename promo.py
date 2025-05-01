@@ -222,7 +222,7 @@ def executar_codigo():
 
         detectar_imagem('./numero-invalido.png')
         detectar_e_clicar('./numero-invalido.png', 18, ajuste_x=0, ajuste_y=0)
-        print(f"Executando a sequência {i+1}/20...")
+        print(f"Executando a sequência {i+1}/{int(sys.argv[1])}...")
         name = click_copy_retun_value(188, 218)
         whats = click_copy_retun_value(234, 265)
         url = f'wa.me/55{whats}'

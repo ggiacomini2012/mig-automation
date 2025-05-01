@@ -243,8 +243,8 @@ def executar_codigo():
         print(f"Sequência {i+1}/20 concluída.")
 
 # Cria threads para o monitoramento e o anúncio
-thread_anuncio = Thread(target=criar_anuncio, daemon=True)
-thread_anuncio.start()
+# thread_anuncio = Thread(target=criar_anuncio, daemon=True)
+# thread_anuncio.start()
 
 thread_monitoramento = Thread(target=monitorar_tecla_esc, daemon=True)
 thread_monitoramento.start()
