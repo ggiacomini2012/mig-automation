@@ -39,40 +39,40 @@ def substituir_texto_com_item(texto, item):
     mensagens_bia = [
         f"Ola!\nBia da Made...\nTudo bem??? 😊\nCurtiu {item}?\nAbraços! ✨",
         f"Oi Bia da made in guarda falando! 👋\nQue legal que comprou {item}!\nEspero que tenha gostado! 🤩\nAbraços!",
-        f"Bia da made in guarda falando! 🎉\nQue bom que escolheu {item}!\nGostou? 🌟\nUm abraço!",
+        f"Bia da made in guarda falando! 🎉\nFicamos felizes que escolheu {item}!\nGostou? 🌟\nUm abraço!",
         f"Ola Bia da made in guarda falando! 💫\nMuito obrigada por comprar {item}!\nEsperamos que tenha gostado! 🎁\nAbraços!",
         f"Oi! 👋\nBia da Made...\nQue legal que curtiu {item}! 🎯\nUm abraco! ✨",
         f"Bia da made in guarda falando! 🤩\nMuito obrigada por escolher {item}!\nGostou? 🌟\nabraços!",
-        f"Ola! 😊\nBia da Made...\nQue bom que gostou d{item}! 💫\nUm abraco! ✨",
+        f"Ola! 😊\nBia da Made...\nFicamos felizes que gostou d{item}! 💫\nUm abraco! ✨",
         f"Oi Bia da made in guarda falando! 🌟\nQue legal que comprou {item}!\nEsperamos que tenha gostado! 🎁\nabraços!",
         f"Bia da made in guarda falando! 💫\nMuito obrigada por escolher {item}!\nGostou? 🌟\nUm abraco!",
-        f"Ola Bia da made in guarda falando! 👋\nQue bom que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nabraços! ✨"
+        f"Ola Bia da made in guarda falando! 👋\nFicamos felizes que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nabraços! ✨"
     ]
 
     mensagens_gui = [
         f"Ola, tudo certinho?\nGui da MIG! 😃✨\nQueria saber, gostou d{item}?\nTudo de bom!!!\nAbracao... 🤩",
         f"Oi Gui aqui! 👋\nQue legal que comprou {item}!\nEspero que tenha gostado! 🤩\nTudo de bom!",
-        f"Gui aqui! 🎉\nQue bom que escolheu {item}!\nGostou? 🌟\nUm abraco!",
+        f"Gui aqui! 🎉\nFicamos felizes que escolheu {item}!\nGostou? 🌟\nUm abraco!",
         f"Ola Gui aqui! 💫\nMuito obrigado por comprar {item}!\nEsperamos que tenha gostado! 🎁\nTudo de bom!",
         f"Oi! 👋\nGui da Made aqui...\nQue legal que curtiu {item}! 🎯\nUm abraco! ✨",
         f"Gui aqui! 🤩\nMuito obrigado por escolher {item}!\nGostou? 🌟\nTudo de bom!",
-        f"Ola! 😊\nGui da MIG...\nQue bom que gostou d{item}! 💫\nUm abraco! ✨",
+        f"Ola! 😊\nGui da MIG...\nFicamos felizes que gostou d{item}! 💫\nUm abraco! ✨",
         f"Oi Gui aqui! 🌟\nQue legal que comprou {item}!\nEsperamos que tenha gostado! 🎁\nTudo de bom!",
         f"Gui aqui! 💫\nMuito obrigado por escolher {item}!\nGostou? 🌟\nUm abraco!",
-        f"Ola Gui aqui! 👋\nQue bom que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nTudo de bom! ✨"
+        f"Ola Gui aqui! 👋\nFicamos felizes que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nTudo de bom! ✨"
     ]
     
     mensagens_made = [
         f"Ola, tudo certinho?\nA galera da made in guarda aqui! 😃✨\nQueria saber, gostou d{item}?\nTudo de bom!!!\nAbracao... 🤩",
         f"Oi a galera da made in guarda aqui! 👋\nQue legal que comprou {item}!\nEspero que tenha gostado! 🤩\nTudo de bom!",
-        f"A galera da made in guarda aqui! 🎉\nQue bom que escolheu {item}!\nGostou? 🌟\nUm abraco!",
+        f"A galera da made in guarda aqui! 🎉\nFicamos felizes que escolheu {item}!\nGostou? 🌟\nUm abraco!",
         f"Ola galera da made in guarda aqui! 💫\nMuito obrigado por comprar {item}!\nEsperamos que tenha gostado! 🎁\nTudo de bom!",
         f"Oi! 👋\nA galera da made in guarda aqui aqui...\nQue legal que curtiu {item}! 🎯\nUm abraco! ✨",
         f"A galera da made in guarda aqui aqui! 🤩\nMuito obrigado por escolher {item}!\nGostou? 🌟\nTudo de bom!",
-        f"Ola! 😊\nA galera da made in guarda aqui...\nQue bom que gostou d{item}! 💫\nUm abraco! ✨",
+        f"Ola! 😊\nA galera da made in guarda aqui...\nFicamos felizes que gostou d{item}! 💫\nUm abraco! ✨",
         f"Oi a galera da made in guarda aqui! 🌟\nQue legal que comprou {item}!\nEsperamos que tenha gostado! 🎁\nTudo de bom!",
         f"A galera da made in guarda aqui! 💫\nMuito obrigado por escolher {item}!\nGostou? 🌟\nUm abraco!",
-        f"Ola a galera da made in guarda aqui! 👋\nQue bom que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nTudo de bom! ✨"
+        f"Ola a galera da made in guarda aqui! 👋\nFicamos felizes que curtiu {item}! 🎯\nEsperamos que tenha gostado! 🎁\nTudo de bom! ✨"
     ]
 
     final_message = texto # Default to original text if no match
@@ -86,12 +86,12 @@ def substituir_texto_com_item(texto, item):
         logging.info("Detected 'Gui' in text (case-insensitive). Choosing from mensagens_gui.")
         final_message = random.choice(mensagens_gui)
         logging.info(f"Chosen message: '{final_message}'")
-    elif "da made in guarda." in texto_lower: # Check lowercase phrase
+    else:
         logging.info("Detected 'da Made in Guarda.' in text (case-insensitive). Choosing from mensagens_made.")
         final_message = random.choice(mensagens_made)
         logging.info(f"Chosen message: '{final_message}'")
-    else:
-        logging.warning("No specific name/phrase detected. Returning original text.") # Log if no condition was met
+    # else:
+    #     logging.warning("No specific name/phrase detected. Returning original text.") # Log if no condition was met
 
     return final_message
 

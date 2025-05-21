@@ -72,7 +72,7 @@ def copy_image_to_clipboard(image_path):
     win32clipboard.CloseClipboard()
 
 # Caminho da imagem
-image_path_new = r"C:\Users\noteUS\Desktop\mig-automation\mae.jpg"
+image_path_new = r"C:\Users\noteUS\Desktop\mig-automation\outono-inverno.png"
 
 # Variável para controlar o estado de execução
 executando = True
@@ -319,7 +319,7 @@ def executar_codigo():
             mensagem_promo = f"Ei, {name}! \n\nA coleção de verão da Made In Guarda está com 50% de desconto 😁 é a sua chance de garantir o look perfeito, com a qualidade que você já conhece e ama.\n\nAh, o desconto é válido nas lojas físicas e no site. \n\nBora garantir? 😉 me chama que eu te ajudo!"
             mensagem_preview = f"Olá, {name}!\n\nPREVIEW outono/inverno 25 da Made in Guarda chegou!\n\nA coleção *MAR O ANO INTEIRO* mergulha na liberdade, na fluidez e no ritmo da estação com estilo e conforto.\n\nJá disponível nas lojas e no site: www.madeinguarda.com.br — vem conferir ✨\n\nTe espero aqui na Loja Balneário Camboriú.\n\nAbraços da galerinha da MIG-BC 🤗🎁"
             mensagem_mae = f"{name}, já escolheu o presente da sua mãe? 💌\n\nNeste Dia das Mães, celebre com um presente cheio de significado!\n\nNas compras a partir de R$599, ganhe uma ecobag exclusiva Made in Guarda para completar esse momento especial.\n\nAção válida enquanto durar o estoque, vamos garantir a sua bag?"
-
+            mensagem_outono_inverno_2025 = f"Outono Inverno 2025 | MAR O ANO INTEIRO\n\n{name}, chegou a hora de vestir o conforto que atravessa estações.\nA coleção Outono Inverno 2025 – MAR O ANO INTEIRO já está disponível na Loja Balneário Camboriú! ✨\n\nCatálogo online:\nhttps://catalogo-outono-inverno-mig.netlify.app/\n\nNovas peças, novas texturas e aquele toque atemporal que você já conhece.\nTecidos macios, shapes versáteis e a vibe da Made in Guarda que conecta você com o que importa.\n\nCorre pra conferir tudo de perto – as novidades te esperam!\n\nUm abraço da galerinha da Made in Guarda BC."
 
             # adiciona foto
             # clicar_e_esperar(496, 729, 1)
@@ -335,7 +335,7 @@ def executar_codigo():
             # pressionar_e_esperar('enter', 3)
             # pyautogui.hotkey('ctrl', 'a')
             time.sleep(5)
-            pyperclip.copy(mensagem_mae)
+            pyperclip.copy(mensagem_outono_inverno_2025)
             time.sleep(0.1)
             pyautogui.hotkey('ctrl', 'v')
             time.sleep(3)
